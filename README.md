@@ -10,7 +10,7 @@
 ![RAG](https://img.shields.io/badge/RAG-0ea5e9?style=flat-square&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
 
-[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-docmind.vercel.app-5b4ef5?style=flat-square)](https://docmind.vercel.app)
+[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-docmind.vercel.app-5b4ef5?style=flat-square)](https://docmind-hazel.vercel.app/)
 
 # DocMind
 
