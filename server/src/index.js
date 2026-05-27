@@ -19,7 +19,6 @@ app.use(express.json());
 const redisConnection = createClient();
 const pdfQueue = new Queue('pdf-processing', { connection: redisConnection });
 
-// ✅ FIX 1: API key support + trim whitespace + disable version check
 const qdrant = new QdrantClient({
   url: (process.env.QDRANT_URL || 'http://localhost:6333').trim(),
   ...(process.env.QDRANT_API_KEY ? { apiKey: process.env.QDRANT_API_KEY.trim() } : {}),
@@ -29,25 +28,35 @@ const qdrant = new QdrantClient({
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const COLLECTION = 'docmind_chunks';
 
-// ✅ FIX 2: ensureCollection never crashes the server
+// ✅ FIX: Create collection + payload indexes for Qdrant Cloud
 async function ensureCollection() {
   try {
     await qdrant.getCollection(COLLECTION);
     console.log('✅ Qdrant collection ready');
   } catch (e) {
-    if (e.status === 404 || (e.data && e.data.status && e.data.status.error?.includes('Not found'))) {
-      try {
-        await qdrant.createCollection(COLLECTION, {
-          vectors: { size: 1536, distance: 'Cosine' },
-        });
-        console.log('✅ Qdrant collection created');
-      } catch (createErr) {
-        console.error('❌ Failed to create collection:', createErr?.data || createErr?.message);
-      }
-    } else {
-      console.error('❌ Qdrant connection error:', e?.status, e?.data || e?.message);
-      console.error('   Check QDRANT_URL and QDRANT_API_KEY in your .env file');
+    try {
+      await qdrant.createCollection(COLLECTION, {
+        vectors: { size: 1536, distance: 'Cosine' },
+      });
+      console.log('✅ Qdrant collection created');
+    } catch (createErr) {
+      console.error('❌ Failed to create collection:', createErr?.data || createErr?.message);
     }
+  }
+
+  // Create payload indexes — required by Qdrant Cloud for filtering
+  try {
+    await qdrant.createPayloadIndex(COLLECTION, {
+      field_name: 'docId',
+      field_schema: 'keyword',
+    });
+    await qdrant.createPayloadIndex(COLLECTION, {
+      field_name: 'page',
+      field_schema: 'integer',
+    });
+    console.log('✅ Qdrant payload indexes ready');
+  } catch (e) {
+    console.log('ℹ️ Indexes already exist');
   }
 }
 ensureCollection();
@@ -116,23 +125,28 @@ app.get('/documents/:docId/status', async (req, res) => {
 
 // Get pages for a doc
 app.get('/documents/:docId/pages', async (req, res) => {
-  const result = await qdrant.scroll(COLLECTION, {
-    filter: { must: [{ key: 'docId', match: { value: req.params.docId } }] },
-    limit: 2000,
-    with_payload: true,
-    with_vector: false,
-  });
-  const seen = new Set();
-  const pages = [];
-  for (const p of result.points) {
-    const key = `${p.payload.page}`;
-    if (!seen.has(key)) {
-      seen.add(key);
-      pages.push({ page: p.payload.page, preview: p.payload.text.substring(0, 280) + '…' });
+  try {
+    const result = await qdrant.scroll(COLLECTION, {
+      filter: { must: [{ key: 'docId', match: { value: req.params.docId } }] },
+      limit: 2000,
+      with_payload: true,
+      with_vector: false,
+    });
+    const seen = new Set();
+    const pages = [];
+    for (const p of result.points) {
+      const key = `${p.payload.page}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        pages.push({ page: p.payload.page, preview: p.payload.text.substring(0, 280) + '…' });
+      }
     }
+    pages.sort((a, b) => a.page - b.page);
+    res.json(pages);
+  } catch (e) {
+    console.error('Pages error:', e?.data || e?.message);
+    res.json([]);
   }
-  pages.sort((a, b) => a.page - b.page);
-  res.json(pages);
 });
 
 // Chat with PDF (streaming RAG)
@@ -160,13 +174,13 @@ app.post('/chat', async (req, res) => {
   const context = ranked.map((c) => `[Page ${c.page}]:\n${c.text}`).join('\n\n---\n\n');
   const systemPrompt = `You are DocMind, an expert AI document analyst. Answer questions about the uploaded PDF.
 
-DOCUMENT CONTEXT (most relevant sections):
+DOCUMENT CONTEXT:
 ${context}
 
 RULES:
 - Cite page numbers like [Page X] whenever referencing content
 - Be structured: use bullet points or numbered lists when helpful
-- If the answer isn't in the context, clearly say "This information isn't found in the provided document"
+- If the answer isn't in the context, say "This information isn't found in the provided document"
 - Keep answers concise yet thorough`;
 
   res.setHeader('Content-Type', 'text/event-stream');
@@ -214,10 +228,10 @@ app.post('/agent', async (req, res) => {
     .substring(0, 10000);
 
   const prompts = {
-    summarize: `Create a comprehensive, well-structured summary. Include:\n- **Overview**\n- **Key Points**\n- **Important Details**\n- **Conclusion/Takeaways**\n\nContent:\n${text}`,
+    summarize: `Create a comprehensive summary with Overview, Key Points, Important Details, Conclusion.\n\nContent:\n${text}`,
     cite: `Find ALL relevant quotes about "${params.topic || 'main topics'}".\nFormat: > "quote" — [Page X]\n\nDocument:\n${text}`,
     outline: `Create a detailed hierarchical outline with page references.\n\nDocument:\n${text}`,
-    keyterms: `Extract and explain the 15 most important terms.\nFormat: **Term** — Definition\n\nDocument:\n${text}`,
+    keyterms: `Extract and explain 15 most important terms.\nFormat: **Term** — Definition\n\nDocument:\n${text}`,
     qa: `Generate 10 study questions with answers.\nFormat:\n**Q1:** Question\n**A:** Answer\n\nDocument:\n${text}`,
   };
 
@@ -260,5 +274,5 @@ app.delete('/documents/:docId', async (req, res) => {
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => console.log(`DocMind server running on port ${PORT}`));
 
-// ✅ FIX 3: Worker runs in same process (Render free tier has no background workers)
+// Worker runs in same process (Render free tier)
 import('./worker.js').catch((e) => console.error('Worker failed to start:', e.message));
