@@ -1,3 +1,17 @@
+
+# 🧠 DocMind — AI PDF Intelligence Platform
+
+![Next.js](https://img.shields.io/badge/Next.js-000?style=flat-square&logo=nextdotjs&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-417E38?style=flat-square&logo=nodedotjs&logoColor=white)
+![Qdrant](https://img.shields.io/badge/Vector_DB-1a1a2e?style=flat-square&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-c0392b?style=flat-square&logo=redis&logoColor=white)
+![BullMQ](https://img.shields.io/badge/BullMQ-7b3fe4?style=flat-square&logoColor=white)
+![Groq](https://img.shields.io/badge/Groq_LLaMA_3.1-ff6b35?style=flat-square&logoColor=white)
+![RAG](https://img.shields.io/badge/RAG-0ea5e9?style=flat-square&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
+
+[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-docmind.vercel.app-5b4ef5?style=flat-square)](https://docmind.vercel.app)
+
 # DocMind
 
 **Stop reading PDFs. Start talking to them.**
