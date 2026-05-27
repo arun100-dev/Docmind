@@ -224,6 +224,3 @@ Once the frontend deploys, copy its URL back into `CLIENT_URL` on the server ser
 
 ---
 
-## License
-
-MIT
