@@ -1,0 +1,36 @@
+services:
+  # ── API Server (worker runs inside same process on free tier) ──
+  - type: web
+    name: docmind-server
+    env: node
+    region: oregon
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm run start
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: docmind-redis
+          property: connectionString
+      - key: QDRANT_URL
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false
+      - key: CLIENT_URL
+        sync: false
+      - key: NODE_ENV
+        value: production
+
+  # ── Redis ─────────────────────────────────────────────────────
+  - type: redis
+    name: docmind-redis
+    region: oregon
+    plan: free
+    maxmemoryPolicy: noeviction
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: allow all internal Render services

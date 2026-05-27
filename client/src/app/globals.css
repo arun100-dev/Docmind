@@ -1,0 +1,173 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink-950: #05050a;
+  --ink-900: #0a0a12;
+  --ink-800: #111120;
+  --ink-700: #1a1a2e;
+  --ink-600: #252540;
+  --acid: #c8f135;
+  --acid-dim: #9ab825;
+  --ghost: #e8e8f0;
+  --ghost-dim: #9090a8;
+  --ghost-faint: #3a3a58;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ghost-faint) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ghost-faint);
+  border-radius: 2px;
+}
+
+/* Noise texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.4;
+}
+
+/* Acid glow effect */
+.acid-glow {
+  text-shadow: 0 0 20px rgba(200, 241, 53, 0.4);
+}
+
+.acid-border {
+  box-shadow: 0 0 0 1px rgba(200, 241, 53, 0.3), 0 0 20px rgba(200, 241, 53, 0.05);
+}
+
+/* Grid background */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(200, 241, 53, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200, 241, 53, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Shimmer skeleton */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--ink-800) 25%,
+    var(--ink-700) 50%,
+    var(--ink-800) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s linear infinite;
+}
+
+/* Markdown styles */
+.prose-docmind h1, .prose-docmind h2, .prose-docmind h3 {
+  font-family: var(--font-display);
+  color: var(--ghost);
+  margin-top: 1.2em;
+  margin-bottom: 0.4em;
+}
+.prose-docmind h1 { font-size: 1.2em; }
+.prose-docmind h2 { font-size: 1.05em; color: var(--acid); }
+.prose-docmind h3 { font-size: 0.95em; }
+
+.prose-docmind p {
+  margin-bottom: 0.75em;
+  line-height: 1.7;
+  color: #c8c8d8;
+}
+
+.prose-docmind ul, .prose-docmind ol {
+  margin: 0.5em 0 0.75em 1.2em;
+}
+.prose-docmind li {
+  margin-bottom: 0.3em;
+  color: #c8c8d8;
+  line-height: 1.6;
+}
+.prose-docmind ul li::marker { color: var(--acid); }
+
+.prose-docmind strong {
+  color: var(--ghost);
+  font-weight: 500;
+}
+
+.prose-docmind em {
+  color: var(--acid-dim);
+  font-style: italic;
+}
+
+.prose-docmind code {
+  font-family: var(--font-mono);
+  background: var(--ink-700);
+  padding: 0.1em 0.4em;
+  border-radius: 3px;
+  font-size: 0.85em;
+  color: var(--acid);
+}
+
+.prose-docmind blockquote {
+  border-left: 2px solid var(--acid);
+  padding-left: 1em;
+  margin: 0.75em 0;
+  color: var(--ghost-dim);
+  font-style: italic;
+}
+
+.prose-docmind hr {
+  border-color: var(--ghost-faint);
+  margin: 1em 0;
+}
+
+/* Page highlight */
+.page-highlight {
+  background: rgba(200, 241, 53, 0.08);
+  border-left: 2px solid var(--acid);
+}
+
+/* Typing dots */
+.typing-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--acid);
+  display: inline-block;
+  animation: pulseDot 1.4s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+@keyframes pulseDot {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.animate-fade-up { animation: fadeUp 0.35s ease forwards; }
+.animate-slide-in { animation: slideIn 0.25s ease forwards; }
