@@ -214,7 +214,7 @@ app.post('/agent', async (req, res) => {
   const { tool, docId, params = {} } = req.body;
   const allChunks = await qdrant.scroll(COLLECTION, {
     filter: { must: [{ key: 'docId', match: { value: docId } }] },
-    limit: 1000, with_payload: true, with_vector: false,
+    limit: 100, with_payload: true, with_vector: false,
   });
 
   const sorted = allChunks.points.sort((a, b) => a.payload.page - b.payload.page);
