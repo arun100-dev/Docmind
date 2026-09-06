@@ -37,7 +37,7 @@ export default function Sidebar() {
           });
         }
       }
-    }, 10000);
+    }, 30000);
     return () => clearInterval(interval);
   }, [documents]);
 
