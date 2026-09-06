@@ -158,7 +158,7 @@ app.post('/chat', async (req, res) => {
   if (pageFilter) filter.must.push({ key: 'page', match: { value: parseInt(pageFilter) } });
 
   const allChunks = await qdrant.scroll(COLLECTION, {
-    filter, limit: 500, with_payload: true, with_vector: false,
+    filter, limit: 50, with_payload: true, with_vector: false,
   });
 
   const keywords = question.toLowerCase().split(/\s+/).filter((w) => w.length > 3);
