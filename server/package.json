@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch src/index.js",
-    "start": "start": "node --max-old-space-size=400 src/index.js",
+     "start": "node --max-old-space-size=400 src/index.js",
     "worker": "node src/worker.js"
   },
   "dependencies": {
