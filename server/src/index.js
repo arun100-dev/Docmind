@@ -13,7 +13,7 @@ dotenv.config();
 const app = express();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
-app.use(cors({ origin: process.env.CLIENT_URL || '*' }));
+app.use(cors());
 app.use(express.json());
 
 const redisConnection = createClient();
